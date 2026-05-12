@@ -1,0 +1,40 @@
+import { Track } from "./PlayerContext";
+
+export const GENRES = [
+  { id: "all", label: "All Tracks", icon: "LayoutGrid" },
+  { id: "house", label: "House", icon: "Waves" },
+  { id: "techno", label: "Techno", icon: "Zap" },
+  { id: "hiphop", label: "Hip-Hop", icon: "Mic2" },
+  { id: "drum-bass", label: "Drum & Bass", icon: "Drum" },
+  { id: "trance", label: "Trance", icon: "Radio" },
+];
+
+const covers = [
+  "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=80&h=80&fit=crop",
+  "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=80&h=80&fit=crop",
+  "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=80&h=80&fit=crop",
+  "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=80&h=80&fit=crop",
+  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=80&h=80&fit=crop",
+  "https://images.unsplash.com/photo-1506157786151-b8491531f063?w=80&h=80&fit=crop",
+  "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=80&h=80&fit=crop",
+  "https://images.unsplash.com/photo-1525201548942-d8732f6617a0?w=80&h=80&fit=crop",
+  "https://images.unsplash.com/photo-1501386761578-eaa54b9e7a85?w=80&h=80&fit=crop",
+  "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=80&h=80&fit=crop",
+  "https://images.unsplash.com/photo-1619983081563-430f63602796?w=80&h=80&fit=crop",
+  "https://images.unsplash.com/photo-1574169208507-84376144848b?w=80&h=80&fit=crop",
+];
+
+export const TRACKS: Track[] = [
+  { id: "1", title: "Neon Horizon", artist: "VAULT001", bpm: 126, key: "4A", genre: "house", duration: "6:22", coverUrl: covers[0], label: "BEATVAULT", isNew: true, isHot: false, price: 99 },
+  { id: "2", title: "Acid Rain Protocol", artist: "DJ Phantom", bpm: 138, key: "7B", genre: "techno", duration: "7:45", coverUrl: covers[1], label: "VAULT REC", isNew: false, isHot: true, price: 129 },
+  { id: "3", title: "Midnight Frequency", artist: "LXST SOUL", bpm: 128, key: "2A", genre: "house", duration: "5:58", coverUrl: covers[2], label: "BEATVAULT", isNew: false, isHot: false, price: 89 },
+  { id: "4", title: "Block Code", artist: "Trap Deity", bpm: 95, key: "3B", genre: "hiphop", duration: "3:44", coverUrl: covers[3], label: "STREET VAULT", isNew: true, isHot: false, price: 99 },
+  { id: "5", title: "Steel Drums", artist: "HEXADECIMAL", bpm: 145, key: "9A", genre: "techno", duration: "8:02", coverUrl: covers[4], label: "VAULT REC", isNew: false, isHot: true, price: 149 },
+  { id: "6", title: "Deep Water (Extended)", artist: "Submerge", bpm: 122, key: "11B", genre: "house", duration: "9:14", coverUrl: covers[5], label: "BEATVAULT", isNew: false, isHot: false, price: 129 },
+  { id: "7", title: "Street Psalms", artist: "MC Cipher", bpm: 90, key: "6A", genre: "hiphop", duration: "4:12", coverUrl: covers[6], label: "STREET VAULT", isNew: true, isHot: true, price: 109 },
+  { id: "8", title: "Voltage Drop", artist: "SYNTHETEK", bpm: 140, key: "1A", genre: "techno", duration: "7:28", coverUrl: covers[7], label: "VAULT REC", isNew: false, isHot: false, price: 89 },
+  { id: "9", title: "Solstice", artist: "Aurora Collective", bpm: 124, key: "8B", genre: "house", duration: "6:50", coverUrl: covers[8], label: "BEATVAULT", isNew: false, isHot: false, price: 99 },
+  { id: "10", title: "Crown Heights", artist: "BK Reloaded", bpm: 88, key: "5A", genre: "hiphop", duration: "3:55", coverUrl: covers[9], label: "STREET VAULT", isNew: false, isHot: true, price: 119 },
+  { id: "11", title: "Industrial Grace", artist: "MNML Werks", bpm: 135, key: "12A", genre: "techno", duration: "8:33", coverUrl: covers[10], label: "VAULT REC", isNew: true, isHot: false, price: 99 },
+  { id: "12", title: "Solar Plexus", artist: "VAULT001", bpm: 130, key: "3A", genre: "house", duration: "7:05", coverUrl: covers[11], label: "BEATVAULT", isNew: false, isHot: true, price: 139 },
+];

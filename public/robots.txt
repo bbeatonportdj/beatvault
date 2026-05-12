@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/callback
+
+Sitemap: ${process.env.NEXT_PUBLIC_SITE_URL}/sitemap.xml
