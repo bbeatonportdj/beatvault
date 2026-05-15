@@ -19,13 +19,16 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(redirectUrl);
     }
 
-    // Optional: Check for admin role in profile table
-    // const { data: profile } = await supabase
-    //   .from('profiles')
-    //   .select('role')
-    //   .eq('id', session.user.id)
-    //   .single();
-    // if (profile?.role !== 'admin') return NextResponse.redirect(new URL('/', req.url));
+    // Check for admin role in profile table
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+      
+    if (profile?.role !== 'admin') {
+      return NextResponse.redirect(new URL('/', req.url));
+    }
   }
 
   return res;
