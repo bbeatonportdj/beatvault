@@ -43,64 +43,67 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-black tracking-tight">Dashboard</h1>
-        <p className="text-white/40 mt-1">Welcome back, here&apos;s what&apos;s happening today.</p>
+    <div className="space-y-12 animate-fade-in max-w-6xl mx-auto">
+      {/* Brutalist Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between border-b-4 border-white/5 pb-8">
+        <div>
+          <h1 className="text-6xl font-black tracking-tighter uppercase leading-none">Command <br/><span className="text-neon">Center</span></h1>
+          <p className="text-white/40 mt-4 text-xs font-bold uppercase tracking-[0.3em]">System Health: Optimal • Vault Sync: Live</p>
+        </div>
+        <div className="flex gap-4 mt-6 md:mt-0">
+          <button className="px-6 py-3 bg-neon text-black font-black uppercase text-xs rounded-xl hover:scale-105 transition-all">Quick Export</button>
+          <button className="px-6 py-3 bg-white/5 text-white font-black uppercase text-xs rounded-xl border border-white/10">Logs</button>
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, idx) => {
-          const Icon = stat.icon;
+      {/* High-Impact Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
+        {stats.slice(0, 3).map((stat, idx) => {
           return (
-            <div key={idx} className="glass-dark p-6 rounded-[2rem] border border-white/5 hover:border-neon/20 transition-all group">
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-neon/10 transition-colors">
-                  <Icon size={24} className="text-white group-hover:text-neon transition-colors" />
-                </div>
-                <div className={`flex items-center gap-1 text-xs font-bold ${stat.trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
-                  {stat.change}
-                  {stat.trend === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                </div>
-              </div>
-              <div>
-                <p className="text-white/40 text-sm font-medium">{stat.label}</p>
-                <h3 className="text-2xl font-black mt-1">{stat.value}</h3>
+            <div key={idx} className="bg-white/[0.02] p-8 border border-white/5 hover:bg-white/[0.04] transition-all">
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-4">{stat.label}</p>
+              <div className="flex items-baseline gap-4">
+                <h3 className="text-5xl font-black tracking-tighter">{stat.value}</h3>
+                <span className="text-xs font-bold text-green-400">{stat.change}</span>
               </div>
             </div>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Recent Activity / Chart Placeholder */}
-        <div className="lg:col-span-2 glass-dark p-8 rounded-[2.5rem] border border-white/5 h-[400px] flex items-center justify-center">
-          <div className="text-center">
-            <TrendingUp size={48} className="text-white/10 mx-auto mb-4" />
-            <p className="text-white/20 font-bold uppercase tracking-widest text-xs">Revenue Analytics Chart</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 pt-12">
+        {/* Simple Activity Table */}
+        <div className="space-y-6">
+          <h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/20">Critical Activity</h3>
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center justify-between py-4 border-b border-white/5 group hover:px-4 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse" />
+                  <span className="text-xs font-bold text-white/60">New sale: Track #029384</span>
+                </div>
+                <span className="text-[10px] font-mono text-white/20 uppercase">2m ago</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Top Tracks / Mini List */}
-        <div className="glass-dark p-8 rounded-[2.5rem] border border-white/5">
-          <h3 className="text-lg font-bold mb-6">Top Selling Tracks</h3>
-          <div className="space-y-6">
-            {[1, 2, 3, 4, 5].map((item) => (
-              <div key={item} className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-white/5 flex-shrink-0 overflow-hidden">
-                   <div className="w-full h-full bg-gradient-to-br from-neon/20 to-purple-500/20" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate">Neon Horizon #{item}</p>
-                  <p className="text-[10px] text-white/30 uppercase font-bold tracking-wider">House • VAULT001</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-bold text-neon">฿499</p>
-                  <p className="text-[10px] text-white/20">12 sales</p>
-                </div>
+        {/* Quick Launch Panel */}
+        <div className="space-y-6">
+          <h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/20">System Access</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <a href="/admin/tracks" className="p-8 rounded-3xl bg-surface border border-white/5 hover:border-neon/40 hover:bg-neon/5 transition-all text-center group">
+              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:text-neon">
+                <Music size={24} />
               </div>
-            ))}
+              <span className="text-xs font-black uppercase tracking-widest">Library</span>
+            </a>
+            <a href="/admin/members" className="p-8 rounded-3xl bg-surface border border-white/5 hover:border-neon/40 hover:bg-neon/5 transition-all text-center group">
+              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:text-neon">
+                <Users size={24} />
+              </div>
+              <span className="text-xs font-black uppercase tracking-widest">Members</span>
+            </a>
           </div>
         </div>
       </div>
