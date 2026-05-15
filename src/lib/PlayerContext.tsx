@@ -14,6 +14,17 @@ export interface Track {
   cover_url?: string; // Support DB format
   audioUrl?: string;
   audio_url?: string; // Support DB format
+  
+  // Versions
+  clean_url?: string;
+  dirty_url?: string;
+  instrumental_url?: string;
+  acapella_url?: string;
+  intro_url?: string;
+  outro_url?: string;
+  
+  quality?: string; // e.g. "320kbps"
+  popularity?: number;
   label?: string;
   isNew?: boolean;
   isHot?: boolean;

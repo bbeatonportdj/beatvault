@@ -44,6 +44,13 @@ export default function Navbar({ onMenuToggle, isMobileMenuOpen }: NavbarProps) 
               BEAT<span className="neon-text">VAULT</span>
             </span>
           </a>
+          
+          <nav className="hidden lg:flex items-center gap-6 ml-8">
+            <a href="/pricing" className="text-[11px] font-black uppercase tracking-widest text-white/40 hover:text-neon transition-colors flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-neon animate-pulse" />
+              Membership
+            </a>
+          </nav>
         </div>
 
         {/* Center: Search */}

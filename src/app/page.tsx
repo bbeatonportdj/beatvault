@@ -11,19 +11,27 @@ import Image from 'next/image';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Hero from '@/components/layout/Hero';
+import { useCrates } from '@/lib/CrateContext';
+import { Plus } from 'lucide-react';
 
 export default function Dashboard() {
   const { currentTrack, playTrack } = usePlayer();
   const { addToCart, removeFromCart, cart } = useCart();
-  const { searchQuery } = useSearch();
+  const { searchQuery, sortBy, setSortBy, bpmRange, setBpmRange, selectedKey, setSelectedKey } = useSearch();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [activeGenre, setActiveGenre] = useState('all');
   const [liveTracks, setLiveTracks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { crates, addTrackToCrate } = useCrates();
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const fetchTracks = async () => {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user || null);
+
         const { data, error } = await supabase
           .from('tracks')
           .select('*')
@@ -50,7 +58,7 @@ export default function Dashboard() {
   const isInCart = (trackId: string) => cart.some(item => item.id === trackId);
 
   const filteredTracks = useMemo(() => {
-    let result = liveTracks;
+    let result = [...liveTracks];
     if (activeGenre !== 'all') {
       result = result.filter(t => t.genre === activeGenre);
     }
@@ -62,8 +70,25 @@ export default function Dashboard() {
         (t.bpm && t.bpm.toString().includes(q))
       );
     }
+    
+    // BPM Range
+    result = result.filter(t => t.bpm >= bpmRange[0] && t.bpm <= bpmRange[1]);
+    
+    // Key Selection
+    if (selectedKey !== 'all') {
+      result = result.filter(t => t.key === selectedKey);
+    }
+    
+    // Sorting
+    if (sortBy === 'popular') {
+      result.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    } else if (sortBy === 'newest') {
+      // Assuming ID or created_at
+      result.sort((a, b) => b.id.localeCompare(a.id));
+    }
+    
     return result;
-  }, [activeGenre, searchQuery, liveTracks]);
+  }, [activeGenre, searchQuery, liveTracks, sortBy]);
 
   return (
     <div className="flex flex-col h-screen bg-base text-white overflow-hidden font-sans">
@@ -116,9 +141,60 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="flex gap-2">
-                 <button className="px-4 py-2 rounded-xl bg-white/5 text-[10px] font-bold uppercase hover:bg-white/10 transition-all">Sort by: Date</button>
-                 <button className="px-4 py-2 rounded-xl bg-white/5 text-[10px] font-bold uppercase hover:bg-white/10 transition-all">BPM Range</button>
+                 <button 
+                  onClick={() => setSortBy(sortBy === 'newest' ? 'popular' : 'newest')}
+                  className="px-4 py-2 rounded-xl bg-white/5 text-[10px] font-bold uppercase hover:bg-white/10 transition-all border border-white/5 hover:border-white/10"
+                 >
+                   Sort by: {sortBy === 'newest' ? 'Newest' : 'Popularity'}
+                 </button>
+                 <button 
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all border ${showFilters ? 'bg-neon text-black border-neon' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}
+                 >
+                   {showFilters ? 'Hide Filters' : 'Show Filters'}
+                 </button>
               </div>
+            </div>
+
+            {/* Advanced Filters Panel */}
+            {showFilters && (
+              <div className="mb-12 p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/5 animate-fade-in grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">BPM Range ({bpmRange[0]} - {bpmRange[1]})</label>
+                  <div className="flex items-center gap-4">
+                    <input 
+                      type="range" min="60" max="180" 
+                      value={bpmRange[1]} 
+                      onChange={(e) => setBpmRange([bpmRange[0], parseInt(e.target.value)])}
+                      className="flex-1 accent-neon"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Harmonic Key</label>
+                  <select 
+                    value={selectedKey}
+                    onChange={(e) => setSelectedKey(e.target.value)}
+                    className="w-full bg-base border border-white/10 rounded-xl px-4 py-2 text-xs font-bold focus:outline-none focus:border-neon"
+                  >
+                    <option value="all">All Keys</option>
+                    <option value="1A">1A</option><option value="2A">2A</option><option value="3A">3A</option>
+                    <option value="4A">4A</option><option value="5A">5A</option><option value="6A">6A</option>
+                    <option value="7A">7A</option><option value="8A">8A</option><option value="9A">9A</option>
+                  </select>
+                </div>
+
+                <div className="flex items-end">
+                   <button 
+                    onClick={() => { setBpmRange([0, 200]); setSelectedKey('all'); }}
+                    className="text-[10px] font-black text-neon uppercase tracking-widest hover:underline"
+                   >
+                     Reset Filters
+                   </button>
+                </div>
+              </div>
+            )}
             </div>
 
             <div className="space-y-3">
@@ -163,19 +239,28 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="font-black text-xl lg:text-2xl truncate uppercase tracking-tighter group-hover:text-neon transition-colors leading-none">
-                          {track.title}
-                        </span>
-                        {track.isNew && <span className="px-2 py-0.5 rounded-lg bg-neon/10 text-neon text-[9px] font-black uppercase tracking-widest border border-neon/20">NEW</span>}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="font-black text-xl lg:text-2xl truncate uppercase tracking-tighter group-hover:text-neon transition-colors leading-none">
+                            {track.title}
+                          </span>
+                          {track.isNew && <span className="px-2 py-0.5 rounded-lg bg-neon/10 text-neon text-[9px] font-black uppercase tracking-widest border border-neon/20">NEW</span>}
+                          {track.quality && <span className="px-2 py-0.5 rounded-lg bg-white/5 text-white/40 text-[9px] font-black uppercase tracking-widest border border-white/10">{track.quality}</span>}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm font-bold text-white/30 truncate flex items-center gap-2 uppercase tracking-wide">
+                            <span className="text-white/60">{track.artist}</span>
+                          </div>
+                          
+                          <div className="flex gap-1">
+                            {track.clean_url && <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-tighter">CLN</span>}
+                            {track.dirty_url && <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 uppercase tracking-tighter">DRT</span>}
+                            {track.instrumental_url && <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20 uppercase tracking-tighter">INST</span>}
+                            {track.acapella_url && <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 uppercase tracking-tighter">ACAP</span>}
+                            {track.intro_url && <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 uppercase tracking-tighter">INT</span>}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-sm font-bold text-white/30 truncate flex items-center gap-2 uppercase tracking-wide">
-                        <span className="text-white/60">{track.artist}</span>
-                        <span className="w-1 h-1 rounded-full bg-white/10" />
-                        <span>{track.label || 'BEATVAULT EXCLUSIVE'}</span>
-                      </div>
-                    </div>
 
                     <div className="hidden lg:flex flex-col items-center gap-1.5 w-24">
                       <span className="text-[9px] font-black text-white/10 uppercase tracking-[0.2em] leading-none">Tempo</span>
@@ -194,15 +279,22 @@ export default function Dashboard() {
 
                   <div className="flex items-center gap-3">
                     <button 
-                      className="hidden md:flex p-4 rounded-2xl bg-white/5 border border-white/5 text-white/30 hover:text-white hover:border-white/20 transition-all"
-                      title="Share Track"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!user) { alert("Please login to save to crate"); return; }
+                        if (crates.length === 0) { alert("Create a crate in your profile first!"); return; }
+                        addTrackToCrate(crates[0].id, track.id);
+                      }}
+                      className="hidden md:flex p-4 rounded-2xl bg-white/5 border border-white/5 text-white/30 hover:text-neon hover:border-neon transition-all"
+                      title="Save to Crate"
                     >
-                      <Radio size={18} />
+                      <Plus size={18} />
                     </button>
                     
                     <button 
-                      className="hidden lg:flex px-4 py-4 rounded-2xl bg-purple-600/10 border border-purple-600/20 text-purple-400 text-[10px] font-black uppercase tracking-widest hover:bg-purple-600 hover:text-white transition-all shadow-lg shadow-purple-900/20"
-                      title="Pro Feature: Download Stems"
+                      className={`hidden lg:flex px-4 py-4 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all shadow-lg ${user?.isPro ? 'bg-purple-600/10 border-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white shadow-purple-900/20' : 'bg-white/5 border-white/10 text-white/20 cursor-not-allowed opacity-50'}`}
+                      title={user?.isPro ? "Download Stems" : "Stems (Pro Feature)"}
+                      onClick={(e) => { e.stopPropagation(); if (!user?.isPro) alert("Stems require DJ PRO membership."); }}
                     >
                       Stems
                     </button>

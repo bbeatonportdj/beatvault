@@ -19,14 +19,29 @@ export default function ProfilePage() {
       if (session) {
         setUser(session.user);
         
-        // Fetch purchase history
-        const { data, error } = await supabase
+        // Fetch purchase history with track details
+        const { data: purchaseData, error } = await supabase
           .from('purchases')
-          .select('*')
+          .select(`
+            *,
+            tracks (*)
+          `)
           .eq('user_id', session.user.id)
           .order('created_at', { ascending: false });
 
-        if (!error) setPurchases(data || []);
+        if (!error) setPurchases(purchaseData || []);
+        
+        // Check subscription
+        const { data: sub } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .eq('status', 'active')
+          .single();
+        
+        if (sub) {
+          setUser((prev: any) => ({ ...prev, isPro: true, planId: sub.plan_id }));
+        }
       }
       setLoading(false);
     };
@@ -68,10 +83,17 @@ export default function ProfilePage() {
                 )}
               </div>
               <div className="text-center md:text-left">
-                <h1 className="text-4xl font-black tracking-tighter uppercase mb-2">{user.user_metadata?.full_name || 'DJ Member'}</h1>
+                <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                  <h1 className="text-4xl font-black tracking-tighter uppercase">{user.user_metadata?.full_name || 'DJ Member'}</h1>
+                  {user.isPro && (
+                    <div className="bg-neon text-black text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest animate-pulse">PRO</div>
+                  )}
+                </div>
                 <p className="text-white/40 font-medium mb-6">{user.email}</p>
                 <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                  <div className="px-4 py-2 rounded-xl bg-neon/10 border border-neon/20 text-neon text-[10px] font-black uppercase tracking-widest">Pro VIP Member</div>
+                  <div className={`px-4 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest ${user.isPro ? 'bg-neon/10 border-neon/20 text-neon' : 'bg-white/5 border-white/5 text-white/40'}`}>
+                    {user.isPro ? `DJ PRO: ${user.planId}` : 'Free Account'}
+                  </div>
                   <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-white/40 text-[10px] font-black uppercase tracking-widest">{purchases.length} Tracks Owned</div>
                 </div>
               </div>
@@ -92,22 +114,57 @@ export default function ProfilePage() {
                 <a href="/" className="text-neon text-sm font-black mt-4 block hover:underline">Start Digging</a>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3">
-                {purchases.map((item: any) => (
-                  <div key={item.id} className="group flex items-center gap-6 p-4 rounded-[2rem] bg-surface border border-white/5 hover:border-neon/20 transition-all">
-                    <div className="w-12 h-12 rounded-xl bg-base flex items-center justify-center flex-shrink-0">
-                      <Music size={24} className="text-white/20 group-hover:text-neon transition-colors" />
+              <div className="grid grid-cols-1 gap-4">
+                {purchases.map((item: any) => {
+                  const track = item.tracks;
+                  return (
+                    <div key={item.id} className="group flex flex-col md:flex-row md:items-center gap-6 p-6 rounded-[2.5rem] bg-surface border border-white/5 hover:border-neon/20 transition-all">
+                      <div className="w-20 h-20 rounded-2xl overflow-hidden bg-base flex-shrink-0 relative">
+                        {track?.cover_url ? (
+                          <Image src={track.cover_url} alt={track.title} fill className="object-cover" unoptimized />
+                        ) : (
+                          <Music size={32} className="absolute inset-0 m-auto text-white/10" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-black text-lg truncate uppercase tracking-tighter">{track?.title || 'Unknown Track'}</h4>
+                          <span className="text-[10px] font-mono text-neon/60">{track?.bpm} BPM</span>
+                        </div>
+                        <p className="text-xs text-white/40 uppercase font-bold tracking-wide mb-3">{track?.artist || 'Unknown Artist'}</p>
+                        
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { label: 'Main', key: 'audio_url' },
+                            { label: 'Clean', key: 'clean_url' },
+                            { label: 'Dirty', key: 'dirty_url' },
+                            { label: 'Inst', key: 'instrumental_url' },
+                            { label: 'Acap', key: 'acapella_url' },
+                            { label: 'Intro', key: 'intro_url' },
+                          ].filter(v => track?.[v.key]).map(v => (
+                            <a 
+                              key={v.label}
+                              href={`/api/download?trackId=${track.id}&version=${v.key}`}
+                              className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest hover:bg-neon hover:text-black hover:border-neon transition-all"
+                            >
+                              {v.label}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-white/20 uppercase tracking-widest font-black mb-2">Purchased {new Date(item.created_at).toLocaleDateString()}</p>
+                        <a 
+                          href={`/api/download?trackId=${track?.id}`}
+                          className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-neon text-black font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-neon"
+                        >
+                          <Download size={16} />
+                          Download All
+                        </a>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-sm truncate uppercase tracking-tight">Track ID: {item.track_id}</h4>
-                      <p className="text-[10px] text-white/30 uppercase tracking-widest font-black">Purchased on {new Date(item.created_at).toLocaleDateString()}</p>
-                    </div>
-                    <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-neon text-black font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-neon-sm">
-                      <Download size={14} />
-                      Download
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

@@ -22,7 +22,13 @@ export default function TrackForm({ onClose, onSuccess }: TrackFormProps) {
   });
   
   const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null); // Main/Preview
+  const [cleanFile, setCleanFile] = useState<File | null>(null);
+  const [dirtyFile, setDirtyFile] = useState<File | null>(null);
+  const [instFile, setInstFile] = useState<File | null>(null);
+  const [acapFile, setAcapFile] = useState<File | null>(null);
+  const [introFile, setIntroFile] = useState<File | null>(null);
+  const [outroFile, setOutroFile] = useState<File | null>(null);
   const [duration, setDuration] = useState('0:00');
 
   const getDuration = (file: File): Promise<string> => {
@@ -58,18 +64,27 @@ export default function TrackForm({ onClose, onSuccess }: TrackFormProps) {
         coverUrl = publicUrl;
       }
 
-      // 2. Upload Audio File
-      if (audioFile) {
-        const fileExt = audioFile.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
+      // 2. Upload Audio Files
+      const uploadAudio = async (file: File | null, prefix: string) => {
+        if (!file) return '';
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${prefix}-${Math.random()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from('tracks')
-          .upload(fileName, audioFile);
+          .upload(fileName, file);
 
         if (uploadError) throw uploadError;
         const { data: { publicUrl } } = supabase.storage.from('tracks').getPublicUrl(fileName);
-        audioUrl = publicUrl;
-      }
+        return publicUrl;
+      };
+
+      audioUrl = await uploadAudio(audioFile, 'main');
+      const cleanUrl = await uploadAudio(cleanFile, 'clean');
+      const dirtyUrl = await uploadAudio(dirtyFile, 'dirty');
+      const instUrl = await uploadAudio(instFile, 'inst');
+      const acapUrl = await uploadAudio(acapFile, 'acap');
+      const introUrl = await uploadAudio(introFile, 'intro');
+      const outroUrl = await uploadAudio(outroFile, 'outro');
 
       // 3. Insert metadata into DB
       const { error } = await supabase.from('tracks').insert([{
@@ -82,7 +97,15 @@ export default function TrackForm({ onClose, onSuccess }: TrackFormProps) {
         label: formData.label,
         cover_url: coverUrl,
         audio_url: audioUrl,
-        duration: duration
+        clean_url: cleanUrl,
+        dirty_url: dirtyUrl,
+        instrumental_url: instUrl,
+        acapella_url: acapUrl,
+        intro_url: introUrl,
+        outro_url: outroUrl,
+        duration: duration,
+        quality: "320kbps",
+        popularity: 0
       }]);
 
       if (error) throw error;
@@ -181,13 +204,13 @@ export default function TrackForm({ onClose, onSuccess }: TrackFormProps) {
 
             {/* Audio Upload */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Audio File (MP3/WAV)</label>
+              <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Preview / Main File</label>
               <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/10 rounded-2xl hover:border-neon/30 hover:bg-neon/5 transition-all cursor-pointer">
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Music size={24} className="text-white/20 mb-2" />
-                  <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">
-                    {audioFile ? audioFile.name : 'Upload Audio'}
-                  </p>
+                   <Music size={24} className="text-white/20 mb-2" />
+                   <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">
+                     {audioFile ? audioFile.name : 'Upload Main Audio'}
+                   </p>
                 </div>
                 <input 
                   type="file" 
@@ -203,6 +226,28 @@ export default function TrackForm({ onClose, onSuccess }: TrackFormProps) {
                   }} 
                 />
               </label>
+            </div>
+
+            {/* Versions Upload */}
+            <div className="col-span-2 grid grid-cols-3 gap-4 border-t border-white/5 pt-6">
+              {[
+                { label: 'Clean', setter: setCleanFile, file: cleanFile },
+                { label: 'Dirty', setter: setDirtyFile, file: dirtyFile },
+                { label: 'Instrumental', setter: setInstFile, file: instFile },
+                { label: 'Acapella', setter: setAcapFile, file: acapFile },
+                { label: 'Intro', setter: setIntroFile, file: introFile },
+                { label: 'Outro', setter: setOutroFile, file: outroFile },
+              ].map((v) => (
+                <div key={v.label} className="space-y-1">
+                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{v.label}</label>
+                  <label className="flex items-center justify-center w-full h-12 border border-dashed border-white/10 rounded-xl hover:border-neon/30 hover:bg-neon/5 transition-all cursor-pointer">
+                    <p className="text-[8px] text-white/40 font-bold uppercase truncate px-2 text-center">
+                      {v.file ? v.file.name : 'Upload'}
+                    </p>
+                    <input type="file" className="hidden" accept="audio/*" onChange={(e) => v.setter(e.target.files?.[0] || null)} />
+                  </label>
+                </div>
+              ))}
             </div>
           </div>
 

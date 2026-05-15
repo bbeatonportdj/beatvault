@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid, Waves, Zap, Mic2, Radio, TrendingUp, Clock, Star, ChevronRight, ShieldCheck } from "lucide-react";
+import { LayoutGrid, Waves, Zap, Mic2, Radio, TrendingUp, Clock, Star, ChevronRight, ShieldCheck, Activity, Music, Building2 } from "lucide-react";
 import { GENRES } from "@/lib/data";
 import { supabase } from "@/lib/supabase";
 import { useState, useEffect } from "react";
@@ -12,6 +12,9 @@ const iconMap: Record<string, React.ComponentType<{ size?: string | number; clas
   Mic2,
   Drum: Waves,
   Radio,
+  Activity,
+  Music,
+  Building2,
 };
 
 interface SidebarProps {

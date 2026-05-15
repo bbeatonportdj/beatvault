@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 
 import { CartProvider } from "@/lib/CartContext";
 import { SearchProvider } from "@/lib/SearchContext";
+import { CrateProvider } from "@/lib/CrateContext";
 
 export default function RootLayout({
   children,
@@ -38,8 +39,10 @@ export default function RootLayout({
         <PlayerProvider>
           <CartProvider>
             <SearchProvider>
-              {children}
-              <AudioPlayer />
+              <CrateProvider>
+                {children}
+                <AudioPlayer />
+              </CrateProvider>
             </SearchProvider>
           </CartProvider>
         </PlayerProvider>

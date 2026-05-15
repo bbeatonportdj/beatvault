@@ -174,9 +174,12 @@ export default function AudioPlayer() {
               <div className="absolute inset-0 rounded-lg border border-neon/50 animate-pulse" />
             )}
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-white truncate">{currentTrack.title}</p>
-            <p className="text-[11px] text-white/40 truncate">{currentTrack.artist}</p>
+          <div className="min-w-0 flex flex-col">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold text-white truncate leading-none">{currentTrack.title}</p>
+              <span className="text-[8px] font-black px-1 rounded bg-white/10 text-white/40 uppercase tracking-widest border border-white/5">Preview</span>
+            </div>
+            <p className="text-[11px] text-white/40 truncate font-medium mt-1">{currentTrack.artist}</p>
           </div>
         </div>
 
@@ -226,6 +229,23 @@ export default function AudioPlayer() {
           >
             <Repeat size={15} />
           </button>
+          
+          {/* Version Switcher */}
+          <div className="hidden xl:flex items-center gap-1 ml-4 border-l border-white/5 pl-4">
+            {[
+              { label: 'CLN', url: currentTrack.clean_url },
+              { label: 'DRT', url: currentTrack.dirty_url },
+              { label: 'INST', url: currentTrack.instrumental_url },
+              { label: 'ACAP', url: currentTrack.acapella_url },
+            ].filter(v => v.url).map(v => (
+              <button 
+                key={v.label}
+                className="text-[9px] font-black px-2 py-1 rounded bg-white/5 text-white/40 hover:bg-neon hover:text-black transition-all uppercase tracking-tighter"
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Right: time + volume */}
